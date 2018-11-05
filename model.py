@@ -31,7 +31,8 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     user_icon = db.Column(db.String(255), nullable=False)
     user_description = db.Column(db.String(255), nullable=True)
-    date_created = db.Column(db.DateTime, nullable=False)
+    # The date will now automatically be stamped on the model on creation.
+    date_created = db.Column(db.DateTime, default=datetime.datetime.utcnow(), nullable=False)
 
     def __repr__(self):
         """Provides basic user info when printed."""
@@ -55,8 +56,8 @@ class Bot(db.Model):
     user = db.relationship("User", backref=db.backref('bot',
                                                       order_by=bot_id))
 
-    post = db.relationship("Post", backref=db.backref('bot',
-                                                      order_by=bot_id))
+    posts = db.relationship("Post", backref=db.backref('bot',
+                                                       order_by=bot_id))
 
     source = db.relationship("Source", backref=db.backref('bot',
                                                       order_by=bot_id))
