@@ -225,18 +225,3 @@ def create_post():
 
     return redirect("/bot/" + bot_id)
 
-
-
-if __name__ == "__main__":
-    
-    # set debug mode for testing
-    #app.debug = True
-    # make sure templates, etc. are not cached in debug mode
-    #app.jinja_env.auto_reload = app.debug
-
-    connect_to_db(app)
-
-    # Use the DebugToolbar
-    #DebugToolbarExtension(app)
-
-    app.run(port=5000, host='0.0.0.0')
