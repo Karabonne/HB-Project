@@ -28,7 +28,7 @@ class User(db.Model):
 
     __tablename__ = "users"
 
-    user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
     password = db.Column(PasswordType(onload=lambda **kwargs: dict(
                 schemes=['pbkdf2_sha512','md5_crypt'],
@@ -41,7 +41,7 @@ class User(db.Model):
     def __repr__(self):
         """Provides basic user info when printed."""
 
-        return f"<User ID={self.user_id}, Username={self.username}>"
+        return f"<User {self.user_id} | {self.username}>"
 
 
 class Bot(db.Model):
@@ -49,27 +49,26 @@ class Bot(db.Model):
 
     __tablename__ = "bots"
 
-    bot_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     source_id = db.Column(db.Integer, db.ForeignKey('sources.source_id'), nullable=False)
-    bot_name = db.Column(db.String(64), nullable=False)
-    bot_icon = db.Column(db.String(255), nullable=False)
-    bot_description = db.Column(db.String(255), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
+    name = db.Column(db.String(64), nullable=False)
+    icon = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
 
     user = db.relationship("User", backref=db.backref('bots',
                                                       order_by=bot_id))
 
-    posts = db.relationship("Post", backref=db.backref('bot',
-                                                      order_by=bot_id))
+    # order_by is deprecated. Ordering should be done on the query object as needed
+    posts = db.relationship("Post", backref=db.backref('bot'))
 
-    source = db.relationship("Source", backref=db.backref('bot',
-                                                      order_by=bot_id))
+    source = db.relationship("Source", backref=db.backref('bot'))
 
     def __repr__(self):
         """Provides basic bot info when printed."""
 
-        return f"<Bot ID={self.bot_id}, Name={self.bot_name}>"
+        return f"<Bot {self.id} | {self.name}>"
 
 
 class Source(db.Model):
@@ -83,9 +82,9 @@ class Source(db.Model):
 
     __tablename__ = "sources"
 
-    source_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    content_type = db.Column(db.String(30))
-    content_source = db.Column(db.Text, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(30))
+    source_id = db.Column(db.Text, nullable=False)
     content = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
@@ -99,37 +98,37 @@ class Post(db.Model):
 
     __tablename__ = "posts"
 
-    post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     bot_id = db.Column(db.Integer, db.ForeignKey('bots.bot_id'))
     content = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
 
     def __repr__(self):
         """Provide simple post info when printed."""
 
-        return f"<{self.content}>"
+        return f"<Post {self.id} | {self.content[:16}>"
 
+    
 class Favorite(db.Model):
     """Relationship table between users and bots. Favorites are used to
     later display a page of curated bot content specific to a user."""
 
     __tablename__ = "favorites"
 
-    fav_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     bot_id = db.Column(db.Integer, db.ForeignKey('bots.bot_id'))
 
-    user = db.relationship("User", backref=db.backref('favorites',
-                                                      order_by=user_id))
+    user = db.relationship("User", backref=db.backref('favorites'))
 
-    bot = db.relationship("Bot", backref=db.backref('favorites',
-                                                      order_by=user_id))
+    bot = db.relationship("Bot", backref=db.backref('favorites'))
 
     def __repr__(self):
         """Provides user and bot info for this favorite."""
 
-        return f"<❤User: {self.user.username} ❤ Bot: {self.bot.bot_name}❤>"
+        return f"<❤User: {self.user.username} ❤ Bot: {self.bot.name}❤>"
 
+    
 if __name__ == "__main__":
 
     from server import app
