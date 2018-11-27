@@ -8,11 +8,22 @@ from twitter import Twitter, OAuth
 from model import Source
 
 
-
-
 # Initialize our twitter session
 t = Twitter(
     auth=OAuth(access_token, token_secret, api_key, api_secret))
+
+
+def get_upload(data):
+    if data['content_type'] == "text_file":
+        data_source = []
+        file_list = request.files.getlist("text_file")
+        for file in file_list:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            data_source.append("uploads/" + filename)
+
+    content = process_source(content_type, data_source)
+
 
 def open_and_read_file(file):
     """Take file path as string; return text as string.
@@ -30,9 +41,8 @@ def open_and_read_file(file):
     return text
 
 
-def process_files(file_list):
+def concatenate_files(file_list):
     return ''.join([open_and_read_file(file) for file in file_list])
-
 
 
 def get_tweets(username):
