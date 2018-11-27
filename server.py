@@ -119,7 +119,6 @@ def login_user():
         if user.password == pswd:
             # add user info to Flask session
             session['user_id'] = user.user_id
-            session['username'] = user.username
             flash('Successfully logged in!')
             return redirect("/")
         else:
@@ -169,7 +168,7 @@ def create_bot():
 
     content = process_source(content_type, data_source)
 
-    if content == False:
+    if not content:
         flash('Error in bot creation! Make sure your sources are correct?')
         return redirect("/")
 
