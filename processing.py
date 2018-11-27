@@ -1,8 +1,12 @@
-import nltk
-from twitter import Twitter, OAuth
-from config import *
-from model import Source
 import markovify
+import nltk
+
+from flask import current_app
+
+from config import *
+from twitter import Twitter, OAuth
+from model import Source
+
 
 
 
@@ -19,21 +23,17 @@ def open_and_read_file(file):
     with open(file) as opened_file:
         try:
             text = opened_file.read().rstrip()
-            text = text.replace('\n', ' ')
-            #text = text.replace('\0', ' ')
-            text = text.replace('\t', ' ')
+            text = text.replace('\n', ' ').replace('\t', ' ')
         except UnicodeDecodeError:
-            return " "
+            current_app.logger.warn('Could not read or replace text.')
 
     return text
+
 
 def process_files(file_list):
+    return ''.join([open_and_read_file(file) for file in file_list])
 
-    text = ""
-    for file in file_list:
-        text += open_and_read_file(file)
 
-    return text
 
 def get_tweets(username):
     """
@@ -85,6 +85,7 @@ def get_tweets(username):
 
     return text_list
 
+
 def process_source(content_type, content_source):
 
     if content_type == "text_file":
@@ -112,6 +113,7 @@ def process_source(content_type, content_source):
 
         nltk.download(content_source)
         text = getattr(nltk.corpus, content_source)
+        # FIXME: The nltk error stays that 'text' does not have a words() method. Make sure correct object here!
         content =  ' '.join(text.words())
 
     else:
